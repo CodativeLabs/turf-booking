@@ -24,6 +24,24 @@ function phoneDigits(p) {
   return (p || "").replace(/\D/g, "");
 }
 
+// Builds a upi://pay deep link — GPay, PhonePe, and Paytm all register as
+// handlers for this scheme, so tapping it on a phone opens the app chooser
+// with the amount already filled in.
+function buildUpiLink(upiId, payeeName, amount, note) {
+  const params = new URLSearchParams({
+    pa: upiId,
+    pn: payeeName,
+    am: String(amount),
+    cu: "INR",
+    tn: note
+  });
+  return `upi://pay?${params.toString()}`;
+}
+
+function buildQrUrl(upiLink) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiLink)}`;
+}
+
 if (!gameId) {
   gameContent.innerHTML = `<div class="card empty-state">Game not found.</div>`;
 } else {
@@ -189,18 +207,31 @@ function render() {
     const paidCount = playedPlayers.filter((p) => p.paid).length;
     const collected = paidCount * perHead;
 
+    let qrBlock = "";
+    if (currentGame.upiId && perHead > 0) {
+      const upiLink = buildUpiLink(currentGame.upiId, currentGame.hostName, perHead, `Turf - ${currentGame.venue}`);
+      const qrUrl = buildQrUrl(upiLink);
+      qrBlock = `
+        <div style="text-align:center;margin:14px 0;">
+          <img src="${qrUrl}" alt="UPI QR code" width="160" height="160" style="border-radius:10px;border:1.5px solid #eef2ee;" />
+          <p class="hint" style="margin-top:6px;">Scan to pay ₹${perHead} to ${escapeHtml(currentGame.upiId)}</p>
+        </div>
+      `;
+    }
+
     html += `
       <div class="card">
         <h2>Payment Split</h2>
         <div class="summary-row"><span>Players who played</span><span>${playedPlayers.length}</span></div>
         <div class="summary-row"><span>Per person</span><span>₹${perHead}</span></div>
         <div class="summary-row total"><span>Collected / Total</span><span>₹${collected} / ₹${currentGame.totalCost}</span></div>
+        ${qrBlock}
         <div style="margin-top:10px;">
           ${playedPlayers.length === 0
             ? `<div class="empty-state">No one marked as played yet.</div>`
-            : playedPlayers.map((p) => renderPaidRow(p, perHead, hostUnlocked)).join("")}
+            : playedPlayers.map((p) => renderPaidRow(p, perHead, hostUnlocked, currentGame)).join("")}
         </div>
-        <p class="hint" style="margin-top:12px;">Pay ${escapeHtml(currentGame.hostName)} (${escapeHtml(currentGame.hostPhone)}) directly — this just tracks who's settled up.</p>
+        <p class="hint" style="margin-top:12px;">${currentGame.upiId ? "Tap Pay to open GPay / PhonePe / Paytm with the amount filled in, or scan the QR above." : `Pay ${escapeHtml(currentGame.hostName)} (${escapeHtml(currentGame.hostPhone)}) directly`} — this just tracks who's settled up.</p>
       </div>
     `;
   }
@@ -261,10 +292,16 @@ function renderAttendanceRow(p, hostUnlocked) {
   `;
 }
 
-function renderPaidRow(p, amount, hostUnlocked) {
+function renderPaidRow(p, amount, hostUnlocked, game) {
   const chip = hostUnlocked
     ? `<button class="toggle-chip ${p.paid ? "on" : ""} paid-toggle" data-pid="${p.id}" data-current="${p.paid ? "yes" : "no"}">${p.paid ? "Paid ✓" : "Unpaid"}</button>`
     : `<span class="toggle-chip ${p.paid ? "on" : ""}">${p.paid ? "Paid ✓" : "Unpaid"}</span>`;
+
+  let payBtn = "";
+  if (!p.paid && game.upiId) {
+    const upiLink = buildUpiLink(game.upiId, game.hostName, amount, `Turf - ${game.venue}`);
+    payBtn = `<a href="${upiLink}" class="btn-secondary btn-small" style="margin-right:8px;text-decoration:none;">Pay</a>`;
+  }
 
   return `
     <div class="paid-row">
@@ -272,7 +309,7 @@ function renderPaidRow(p, amount, hostUnlocked) {
         <div class="player-name">${escapeHtml(p.name)}</div>
         <div class="player-phone amount">₹${amount}</div>
       </div>
-      ${chip}
+      <div style="display:flex;align-items:center;">${payBtn}${chip}</div>
     </div>
   `;
 }

@@ -51,6 +51,7 @@ createForm.addEventListener("submit", async (e) => {
   const time = document.getElementById("gameTime").value;
   const venue = document.getElementById("gameVenue").value.trim();
   const cost = Number(document.getElementById("gameCost").value);
+  const upiId = document.getElementById("gameUpi").value.trim();
 
   if (!hostName || !hostPhone || !date || !time || !venue || !cost) return;
 
@@ -69,6 +70,7 @@ createForm.addEventListener("submit", async (e) => {
       time,
       venue,
       totalCost: cost,
+      upiId: upiId || null,
       phase: "confirming", // confirming -> played
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
