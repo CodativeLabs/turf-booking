@@ -119,6 +119,59 @@ function openHostUnlock() {
   hostOverlay.classList.remove("hidden");
 }
 
+// ---------- Edit game ----------
+const editOverlay = document.getElementById("editOverlay");
+const editForm = document.getElementById("editForm");
+
+function openEditModal() {
+  document.getElementById("editDate").value = currentGame.date;
+  document.getElementById("editTime").value = currentGame.time;
+  document.getElementById("editVenue").value = currentGame.venue;
+  document.getElementById("editCost").value = currentGame.totalCost;
+  document.getElementById("editUpi").value = currentGame.upiId || "";
+  editOverlay.classList.remove("hidden");
+}
+
+document.getElementById("editCancelBtn").addEventListener("click", () => {
+  editOverlay.classList.add("hidden");
+});
+
+editForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const date = document.getElementById("editDate").value;
+  const time = document.getElementById("editTime").value;
+  const venue = document.getElementById("editVenue").value.trim();
+  const cost = Number(document.getElementById("editCost").value);
+  const upiId = document.getElementById("editUpi").value.trim();
+  if (!date || !time || !venue || !cost) return;
+
+  await db.collection("games").doc(gameId).update({
+    date,
+    time,
+    venue,
+    totalCost: cost,
+    upiId: upiId || null
+  });
+  editOverlay.classList.add("hidden");
+  showToast("Game updated");
+});
+
+// ---------- Delete game (mark as done) ----------
+async function deleteGame() {
+  const sure = confirm("This permanently deletes the game and its player list. Continue?");
+  if (!sure) return;
+
+  const gameRef = db.collection("games").doc(gameId);
+  const batch = db.batch();
+  currentPlayers.forEach((p) => {
+    batch.delete(gameRef.collection("players").doc(p.id));
+  });
+  batch.delete(gameRef);
+  await batch.commit();
+
+  window.location.href = "index.html";
+}
+
 // ---------- Rendering ----------
 function render() {
   if (!currentGame) return;
@@ -150,7 +203,11 @@ function render() {
       </div>
 
       ${hostUnlocked
-        ? `<div class="meta" style="margin-top:10px;color:var(--green-deep);font-weight:700;">✓ Host controls unlocked</div>`
+        ? `<div class="meta" style="margin-top:10px;color:var(--green-deep);font-weight:700;">✓ Host controls unlocked</div>
+           <div style="display:flex;gap:8px;margin-top:10px;">
+             <button class="btn-secondary btn-small" id="editGameBtn">Edit Details</button>
+             <button class="btn-danger-outline btn-small" id="deleteGameBtn">Mark as Done (Delete)</button>
+           </div>`
         : `<button class="btn-secondary btn-small" style="margin-top:12px;" id="hostUnlockOpenBtn">Manage as host</button>`
       }
     </div>
@@ -327,6 +384,12 @@ function attachHandlers(myId, hostUnlocked) {
 
   const hostBtn = document.getElementById("hostUnlockOpenBtn");
   if (hostBtn) hostBtn.addEventListener("click", openHostUnlock);
+
+  const editBtn = document.getElementById("editGameBtn");
+  if (editBtn) editBtn.addEventListener("click", openEditModal);
+
+  const deleteBtn = document.getElementById("deleteGameBtn");
+  if (deleteBtn) deleteBtn.addEventListener("click", deleteGame);
 
   document.querySelectorAll(".status-switch button").forEach((btn) => {
     btn.addEventListener("click", async () => {
