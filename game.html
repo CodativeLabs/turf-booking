@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Details — Turf Booking</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+    <div class="pitch-halfway"></div>
+    <div class="pitch-box left"></div>
+    <div class="pitch-box right"></div>
+
+    <div class="wrap">
+        <a href="index.html" class="back-link">← All games</a>
+
+        <div id="gameContent"></div>
+    </div>
+
+    <!-- Join popup: name + phone -->
+    <div class="overlay hidden" id="joinOverlay">
+        <div class="modal">
+            <h2>Who's this?</h2>
+            <p class="hint">Just once — we'll remember you on this device.</p>
+            <form id="joinForm">
+                <label for="joinName">Your name</label>
+                <input type="text" id="joinName" required placeholder="e.g. Priya" />
+                <label for="joinPhone">Your phone number</label>
+                <input type="tel" id="joinPhone" required placeholder="e.g. 9876543210" />
+                <button type="submit" class="btn-primary">Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Host unlock popup -->
+    <div class="overlay hidden" id="hostOverlay">
+        <div class="modal">
+            <h2>Host Controls</h2>
+            <p class="hint">Enter the 6-digit host code to manage this game.</p>
+            <div class="host-lock">
+                <input type="password" id="hostUnlockPass" maxlength="6" placeholder="6-digit code" />
+                <button class="btn-primary btn-small" id="hostUnlockBtn">Unlock</button>
+            </div>
+            <div class="error-text" id="hostUnlockError" style="display:none;">Incorrect code.</div>
+            <button class="btn-secondary btn-small" style="width:100%;margin-top:12px;"
+                id="hostUnlockCancel">Cancel</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>

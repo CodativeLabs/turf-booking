@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turf Booking</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="pitch-halfway"></div>
+  <div class="pitch-box left"></div>
+  <div class="pitch-box right"></div>
+
+  <div class="wrap">
+    <header class="top">
+      <h1>⚽ Turf Booking</h1>
+      <p>Create a game, get people confirmed, split the bill. No more copy-paste lists.</p>
+    </header>
+
+    <div class="card">
+      <button class="btn-primary" id="openCreateBtn">+ Host a Game</button>
+    </div>
+
+    <div class="section-title">Games</div>
+    <div id="gamesList"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      No games yet. Be the first to host one!
+    </div>
+  </div>
+
+  <!-- Create game modal -->
+  <div class="overlay hidden" id="createOverlay">
+    <div class="modal">
+      <h2>Host a Game</h2>
+      <p class="hint">Enter the 6-digit host code shared in your group.</p>
+
+      <div id="passwordStep">
+        <label for="hostPass">Host code</label>
+        <input type="password" id="hostPass" maxlength="6" placeholder="6-digit code" />
+        <div class="error-text" id="passError" style="display:none;">Incorrect code, try again.</div>
+        <button class="btn-primary" id="checkPassBtn">Continue</button>
+        <button class="btn-secondary btn-small" style="width:100%;margin-top:8px;" id="cancelPassBtn">Cancel</button>
+      </div>
+
+      <form id="createForm" style="display:none;">
+        <label for="hostName">Your name</label>
+        <input type="text" id="hostName" required placeholder="e.g. Rohan" />
+
+        <label for="hostPhone">Your phone number</label>
+        <input type="tel" id="hostPhone" required placeholder="e.g. 9876543210" />
+
+        <label for="gameDate">Date</label>
+        <input type="date" id="gameDate" required />
+
+        <label for="gameTime">Time</label>
+        <input type="time" id="gameTime" required />
+
+        <label for="gameVenue">Venue</label>
+        <input type="text" id="gameVenue" required placeholder="e.g. Greenfield Turf, Baner" />
+
+        <label for="gameCost">Total turf cost (₹)</label>
+        <input type="number" id="gameCost" required placeholder="e.g. 1800" min="0" />
+
+        <button type="submit" class="btn-primary">Create Game</button>
+        <button type="button" class="btn-secondary btn-small" style="width:100%;margin-top:8px;"
+          id="cancelCreateBtn">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
